@@ -1,0 +1,58 @@
+name: Lint codebase
+
+env:
+  PUBLIC_MAPBOX_KEY: 'sample-key'
+  WSDOT_API_KEY: 'sample-key'
+
+concurrency:
+  group: '${{ github.workflow }}-${{ github.event.number || github.sha }}'
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    name: Run lint jobs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run lint jobs
+        run: bun lint
+
+  check:
+    name: Run svelte-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run svelte-check
+        run: bun check
+
+  build:
+    name: Run build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run build
+        run: bun run build
