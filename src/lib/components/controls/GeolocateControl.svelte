@@ -4,8 +4,7 @@
 	import { GeolocateControl, Map } from 'mapbox-gl'
 	import { getContext, onMount } from 'svelte'
 
-	export let position: Parameters<Map['addControl']>[1] = 'bottom-left'
-
+	const position = getContext<Parameters<Map['addControl']>[1]>('mapbox-control-position')
 	const mapStore = getContext<Writable<Map>>('mapbox-map')
 
 	onMount(() => {

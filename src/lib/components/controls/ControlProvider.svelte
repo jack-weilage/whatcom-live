@@ -26,10 +26,10 @@
 		}
 	}
 
-	export let position: Parameters<Map['addControl']>[1] = 'bottom-left'
-	export let component: ComponentType
-
+	const position = getContext<Parameters<Map['addControl']>[1]>('mapbox-control-position')
 	const mapStore = getContext<Writable<Map>>('mapbox-map')
+
+	export let component: ComponentType
 
 	onMount(() => {
 		const control = new CustomControl(component)

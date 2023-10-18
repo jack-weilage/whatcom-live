@@ -3,6 +3,7 @@
 
 	import { PUBLIC_MAPBOX_KEY } from '$env/static/public'
 
+	import ControlGroupProvider from '$lib/components/ControlGroupProvider.svelte'
 	import AboutControl from '$lib/components/controls/AboutControl.svelte'
 	import ControlProvider from '$lib/components/controls/ControlProvider.svelte'
 	import GeolocateControl from '$lib/components/controls/GeolocateControl.svelte'
@@ -99,10 +100,16 @@
 		},
 	]}
 >
-	<NavigationControl />
-	<GeolocateControl />
-	<ControlProvider component={LayerControl} position="top-left" />
-	<ControlProvider component={AboutControl} position="top-right" />
+	<ControlGroupProvider position="bottom-left">
+		<NavigationControl />
+		<GeolocateControl />
+	</ControlGroupProvider>
+	<ControlGroupProvider position="top-left">
+		<ControlProvider component={LayerControl} />
+	</ControlGroupProvider>
+	<ControlGroupProvider position="top-right">
+		<ControlProvider component={AboutControl} />
+	</ControlGroupProvider>
 
 	<WtaRoutesSource />
 	<WtaVehiclesSource />
