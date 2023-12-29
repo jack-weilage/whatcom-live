@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { Prediction, Vehicle } from '$lib/clients/wta.server'
+	import type { Vehicle } from '$lib/clients/wta.server'
 
 	import { now } from '$lib/stores/misc'
 	import { wtaVehicles } from '$lib/stores/wta'
-	import { relativeTime, wtaTimestampToDate } from '$lib/utils'
+	import { relativeTime } from '$lib/utils'
 	import { Chronosis } from 'chronosis'
 
 	import Popup from './Popup.svelte'
@@ -46,21 +46,18 @@
 		return directions[i]
 	}
 	let activeItem: Vehicle
-	let predictions: {
+	interface ParsedPrediction {
 		address: string
-		time: number
 		isDelayed: boolean
-	}[] = []
+		time: number
+	}
+	let predictions: ParsedPrediction[] = []
 
 	$: if (activeItem?.vehicleGroup === 'fixedRoute') {
 		fetch(`/api/wta/vehicles/prediction/${activeItem.vehicle}`)
-			.then((res) => res.json() as Promise<Prediction[]>)
+			.then((res) => res.json() as Promise<ParsedPrediction[]>)
 			.then((preds) => {
-				predictions = preds.map(({ stpnm, dly, prdtm }) => ({
-					address: stpnm,
-					isDelayed: dly,
-					time: +wtaTimestampToDate(prdtm),
-				}))
+				predictions = preds
 			})
 	} else if (activeItem?.vehicleGroup === 'paratransit') {
 		const midnight = new Chronosis().startOf('day')

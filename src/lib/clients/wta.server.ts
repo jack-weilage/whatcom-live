@@ -377,7 +377,7 @@ export class WTAClient {
 			}
 		}>(`/vehicles/${vehicle}/predictions`)
 
-		return prd.map(format_data)
+		return (prd ?? []).map(format_data)
 	}
 	// async getVehicleByVehicleAndTimestamp(vehicle: string, timestamp: string) {
 
