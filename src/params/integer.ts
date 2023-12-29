@@ -1,3 +1,1 @@
-import type { ParamMatcher } from '@sveltejs/kit'
-
-export const match: ParamMatcher = (param): param is `${number}` => /^\d+$/.test(param)
+export const match = (param: string): param is `${number}` => /^\d+$/.test(param)

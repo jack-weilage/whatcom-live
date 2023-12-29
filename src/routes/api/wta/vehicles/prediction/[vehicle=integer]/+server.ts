@@ -1,14 +1,11 @@
 import type { Config } from '@sveltejs/adapter-vercel'
+import type { RequestEvent } from './$types'
 
 import { client } from '$lib/clients/wta.server'
 import { wtaTimestampToDate } from '$lib/utils'
-import { error, json } from '@sveltejs/kit'
+import { json } from '@sveltejs/kit'
 
-export async function GET({ params: { vehicle } }) {
-	if (!vehicle) {
-		error(403);
-	}
-
+export async function GET({ params: { vehicle } }: RequestEvent): Promise<Response> {
 	const predictions = await client.getPredictionsByVehicle(vehicle)
 
 	return json(
