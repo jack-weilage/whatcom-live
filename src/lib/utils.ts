@@ -16,9 +16,9 @@ export function relativeTime(now: number, then: number) {
 		}
 
 		if (now < then) {
-			return `in ${unitDelta} ${unit}${unitDelta === 1 ? '' : 's'}`
+			return `in ${unitDelta}${unit}`
 		} else if (then < now) {
-			return `${unitDelta} ${unit}${unitDelta === 1 ? '' : 's'} ago`
+			return `${unitDelta}${unit} ago`
 		}
 
 		return 'now'
@@ -26,12 +26,12 @@ export function relativeTime(now: number, then: number) {
 
 	return (
 		// checkUnit('millisecond', 1, 1000) ||
-		evaluateUnit('second', 1000, 60) ||
-		evaluateUnit('minute', 60 * 1000, 60) ||
-		evaluateUnit('hour', 60 * 60 * 1000, 24) ||
-		evaluateUnit('day', 24 * 60 * 60 * 1000, 31) ||
-		evaluateUnit('month', 31 * 24 * 60 * 60 * 1000, 12) ||
-		evaluateUnit('year', 12 * 31 * 24 * 60 * 60 * 1000, Infinity)
+		evaluateUnit('s', 1000, 60) ||
+		evaluateUnit('m', 60 * 1000, 60) ||
+		evaluateUnit('h', 60 * 60 * 1000, 24) ||
+		evaluateUnit('d', 24 * 60 * 60 * 1000, 31) ||
+		evaluateUnit('mo', 31 * 24 * 60 * 60 * 1000, 12) ||
+		evaluateUnit('y', 12 * 31 * 24 * 60 * 60 * 1000, Infinity)
 	)
 }
 export const wsdotTimestampToDate = (timestamp: WSDOTTimestamp) =>
