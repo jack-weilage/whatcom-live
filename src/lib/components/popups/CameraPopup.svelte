@@ -2,7 +2,7 @@
 	import { wsdotCameras } from '$lib/stores/wsdot'
 	import { onMount } from 'svelte'
 
-	import Popup from './Popup.svelte'
+	import CustomPopup from '../CustomPopup.svelte'
 
 	let cacheBreak = 0
 	onMount(() => {
@@ -19,7 +19,7 @@
 	})
 </script>
 
-<Popup
+<CustomPopup
 	store={wsdotCameras}
 	itemToID={({ CameraID }) => CameraID}
 	itemToLngLat={({ DisplayLongitude, DisplayLatitude }) => [DisplayLongitude, DisplayLatitude]}
@@ -36,4 +36,4 @@
 		height={activeItem.ImageHeight}
 		class="w-full"
 	/>
-</Popup>
+</CustomPopup>

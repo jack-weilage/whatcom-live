@@ -6,7 +6,7 @@
 	import { relativeTime } from '$lib/utils'
 	import { Chronosis } from 'chronosis'
 
-	import Popup from './Popup.svelte'
+	import CustomPopup from '../CustomPopup.svelte'
 
 	function groupToGroupName(group: Vehicle['vehicleGroup']) {
 		switch (group) {
@@ -45,7 +45,7 @@
 
 		return directions[i]
 	}
-	let activeItem: Vehicle
+
 	interface ParsedPrediction {
 		address: string
 		isDelayed: boolean
@@ -53,6 +53,7 @@
 	}
 	let predictions: ParsedPrediction[] = []
 
+	let activeItem: Vehicle
 	$: if (activeItem?.vehicleGroup === 'fixedRoute') {
 		fetch(`/api/wta/vehicles/prediction/${activeItem.vehicle}`)
 			.then((res) => res.json() as Promise<ParsedPrediction[]>)
@@ -90,7 +91,7 @@
 	}
 </script>
 
-<Popup
+<CustomPopup
 	store={wtaVehicles}
 	itemToID={({ vehicle }) => vehicle}
 	itemToLngLat={({ lng, lat }) => [lng, lat]}
@@ -127,21 +128,23 @@
 		</p>
 	{/if}
 	{#if activeItem.vehicleGroup === 'fixedRoute' || activeItem.vehicleGroup === 'paratransit'}
-		<p><b>Incoming stops:</b></p>
-		{#each predictions as { address, isDelayed, time }, i (address)}
-			<li class="flex justify-between gap-8">
-				<span>
-					<b>{i + 1}.</b>
-					{address}
-				</span>
-				<span class:text-red-700={isDelayed}>
-					{relativeTime($now, time)}
-				</span>
-			</li>
-		{/each}
+		<p class="font-bold">Incoming stops:</p>
+		<ul class="flex flex-col gap-2">
+			{#each predictions as { address, isDelayed, time }}
+				<li class="flex items-center justify-between gap-4">
+					<p>{address}</p>
+					<p
+						class:bg-red-300={isDelayed}
+						class="w-24 whitespace-nowrap rounded-lg bg-gray-100 px-4 py-2 text-center"
+					>
+						{relativeTime($now, time)}
+					</p>
+				</li>
+			{/each}
+		</ul>
 	{/if}
 	<p>
 		<b>Last updated:</b>
 		{new Chronosis(activeItem.time).format('h:mm:ss a')} ({relativeTime($now, activeItem.time)})
 	</p>
-</Popup>
+</CustomPopup>

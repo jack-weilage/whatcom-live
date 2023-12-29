@@ -4,17 +4,15 @@
 	import { relativeTime, wsdotTimestampToDate } from '$lib/utils'
 	import { Chronosis } from 'chronosis'
 
-	import Popup from './Popup.svelte'
+	import CustomPopup from '../CustomPopup.svelte'
 </script>
 
-<Popup
+<CustomPopup
 	store={wsdotBorderCrossings}
 	itemToID={({ CrossingName }) => CrossingName}
 	itemToLngLat={({ BorderCrossingLocation }) => [
-		//@ts-expect-error - TODO: Svelte type narrowing
-		BorderCrossingLocation.Longitude,
-		//@ts-expect-error - TODO: Svelte type narrowing
-		BorderCrossingLocation.Latitude,
+		BorderCrossingLocation?.Longitude ?? 0,
+		BorderCrossingLocation?.Latitude ?? 0,
 	]}
 	let:activeItem
 >
@@ -31,4 +29,4 @@
 		<b>Last updated:</b>
 		{lastUpdated.format('hh:mm a')} ({relativeTime($now, +lastUpdated)})
 	</p>
-</Popup>
+</CustomPopup>
