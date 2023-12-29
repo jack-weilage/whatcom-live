@@ -6,7 +6,7 @@ import { error, json } from '@sveltejs/kit'
 
 export async function GET({ params: { vehicle } }) {
 	if (!vehicle) {
-		throw error(403)
+		error(403);
 	}
 
 	const predictions = await client.getPredictionsByVehicle(vehicle)
