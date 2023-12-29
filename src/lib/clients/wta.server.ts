@@ -285,7 +285,7 @@ export class WTAClient {
 		}
 		const response = await fetch(new URL(endpoint, 'https://api.ridewta.com'), { headers })
 
-		return response.json().then() as Promise<T>
+		return response.json() as Promise<T>
 	}
 
 	async getDetours() {
@@ -390,6 +390,7 @@ const format_data = <T extends Record<string, any>>(input: T) =>
 	Object.entries(input).reduce(
 		(acc, [key, value]) => ({
 			...acc,
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Yes, this is how it's meant to work. No, this is not pretty.
 			[key]: value ? (Number.isNaN(+value) ? value : +value) : undefined,
 		}),
 		{} as T,

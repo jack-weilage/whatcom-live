@@ -66,7 +66,7 @@ export class WSDOTTrafficClient {
 			{ headers },
 		)
 
-		return response.json().then() as Promise<T>
+		return response.json() as Promise<T>
 	}
 
 	async getBorderCrossings() {
@@ -91,4 +91,6 @@ export class WSDOTTrafficClient {
 		return cameras
 	}
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const client = new WSDOTTrafficClient(WSDOT_API_KEY)

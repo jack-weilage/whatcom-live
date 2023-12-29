@@ -75,8 +75,8 @@
 						type="checkbox"
 						checked={visible}
 						class="hidden cursor-pointer"
-						on:change={({ currentTarget }) => {
-							currentTarget.checked ? store.show() : store.hide()
+						on:change={async ({ currentTarget }) => {
+							currentTarget.checked ? await store.show() : store.hide()
 						}}
 					/>
 					<img {src} alt="" class="mr-2 size-5" />

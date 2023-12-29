@@ -35,9 +35,11 @@
 			activeItemID = features?.[0].properties?.id as number | string | undefined
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-misused-promises -- It works...
 		$mapStore.on('click', $layerStore.id, onClick)
 
 		return () => {
+			// eslint-disable-next-line @typescript-eslint/no-misused-promises -- It works...
 			$mapStore.off('click', $layerStore.id, onClick)
 		}
 	})

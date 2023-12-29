@@ -55,7 +55,7 @@
 
 	let activeItem: Vehicle
 	$: if (activeItem?.vehicleGroup === 'fixedRoute') {
-		fetch(`/api/wta/vehicles/prediction/${activeItem.vehicle}`)
+		void fetch(`/api/wta/vehicles/prediction/${activeItem.vehicle}`)
 			.then((res) => res.json() as Promise<ParsedPrediction[]>)
 			.then((preds) => {
 				predictions = preds

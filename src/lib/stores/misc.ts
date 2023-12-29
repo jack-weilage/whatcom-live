@@ -22,7 +22,7 @@ export function createLayerStore<T>(initial_value: T, initial_visibility: boolea
 			update((store) => ({ ...store, visible: true }))
 
 			if (!get({ subscribe }).loaded) {
-				this.fetch()
+				await this.fetch()
 			}
 		},
 		hide() {

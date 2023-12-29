@@ -17,7 +17,6 @@
 	import Mapbox from 'mapbox-gl'
 
 	import { Map, Source, Layer, Image, Control } from 'svelte-mapbox'
-	//@ts-expect-error @turf/helpers doesn't roll with types
 	import { featureCollection, lineString, point } from '@turf/helpers'
 
 	import AboutControl from '$lib/components/controls/AboutControl.svelte'
@@ -29,40 +28,40 @@
 	import VehiclePopup from '$lib/components/popups/VehiclePopup.svelte'
 
 	onMount(() => {
-		wtaVehicles.fetch()
-		wtaRoutes.fetch()
+		void wtaVehicles.fetch()
+		void wtaRoutes.fetch()
 
-		wsdotAlerts.fetch()
-		wsdotBorderCrossings.fetch()
-		wsdotCameras.fetch()
+		void wsdotAlerts.fetch()
+		void wsdotBorderCrossings.fetch()
+		void wsdotCameras.fetch()
 
 		const intervals = [
 			setInterval(() => {
-				wtaVehicles.fetch()
+				void wtaVehicles.fetch()
 			}, 5 * 1000),
 			setInterval(
 				() => {
-					wsdotBorderCrossings.fetch()
+					void wsdotBorderCrossings.fetch()
 				},
 				5 * 60 * 1000,
 			),
 			setInterval(
 				() => {
-					wsdotAlerts.fetch()
+					void wsdotAlerts.fetch()
 				},
 				10 * 60 * 1000,
 			),
 			setInterval(
 				() => {
-					wtaRoutes.fetch()
-					wsdotCameras.fetch()
+					void wtaRoutes.fetch()
+					void wsdotCameras.fetch()
 				},
 				12 * 60 * 60 * 1000,
 			),
 		]
 
 		return () => {
-            intervals.forEach(clearInterval)
+			intervals.forEach(clearInterval)
 		}
 	})
 
@@ -232,7 +231,7 @@
 					$wsdotAlerts.data
 						.filter(({ geometry }) => geometry)
 						.map(({ Priority, geometry }) =>
-							lineString(geometry?.coordinates, { color: priorityToColor[Priority] }),
+							lineString(geometry?.coordinates ?? [], { color: priorityToColor[Priority] }),
 						),
 				),
 			}}

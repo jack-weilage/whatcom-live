@@ -1,8 +1,8 @@
-import type { Action } from 'svelte/action'
+import type { ActionReturn } from 'svelte/action'
 
-export const outclick: Action<HTMLElement, () => void> = (node, callback) => {
+export const outclick = (node: Node, callback: () => void): ActionReturn<() => void> => {
 	function onClick({ target }: MouseEvent) {
-		if (!node.contains(target!)) {
+		if (!node.contains(target as Node)) {
 			callback()
 		}
 	}
