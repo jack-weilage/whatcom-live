@@ -53,7 +53,7 @@
 	<label
 		class:bg-gray-100={!open}
 		class:text-gray-400={!open}
-		class="flex aspect-square cursor-pointer items-center rounded-full bg-white px-2 py-1.5"
+		class="mr-10 flex aspect-square cursor-pointer items-center rounded-full bg-white px-2 py-1.5"
 	>
 		<input type="checkbox" class="hidden cursor-pointer" bind:checked={open} />
 		{#if open}
@@ -64,7 +64,7 @@
 	</label>
 
 	{#if open}
-		<div class="ml-10 flex flex-wrap gap-2" transition:fly={{ x: -50, duration: 250 }}>
+		<div class="mr-16 flex flex-wrap gap-2" transition:fly={{ x: -50, duration: 250 }}>
 			{#each layers as { name, visible, store, src } (name)}
 				<label
 					class:bg-gray-100={!visible}
