@@ -62,9 +62,7 @@
 		]
 
 		return () => {
-			for (const interval of intervals) {
-				clearInterval(interval)
-			}
+            intervals.forEach(clearInterval)
 		}
 	})
 
