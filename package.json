@@ -12,6 +12,13 @@
 		"lint": "prettier --cache --check . && eslint .",
 		"preview": "vite preview"
 	},
+	"dependencies": {
+		"bits-ui": "^0.17.0",
+		"clsx": "^2.1.0",
+		"radix-icons-svelte": "^1.2.1",
+		"tailwind-merge": "^2.2.1",
+		"tailwind-variants": "^0.1.20"
+	},
 	"devDependencies": {
 		"@mapbox/mapbox-sdk": "^0.15.3",
 		"@sveltejs/adapter-vercel": "^4.0.3",
