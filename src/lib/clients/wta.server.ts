@@ -1,3 +1,5 @@
+import { BaseClient } from './base.server'
+
 interface Detour {
 	id: string
 	state: 'active' /* | 'inactive' */
@@ -85,7 +87,7 @@ interface PatternStop extends PatternPoint {
 }
 
 type StringBoolean = 'Yes' | 'No'
-interface Stop {
+export interface Stop {
 	id: number
 	name: string
 	stopNum: number
@@ -97,6 +99,7 @@ interface Stop {
 	shelter: StringBoolean
 	bench: StringBoolean
 	trashcan: StringBoolean
+	// lol WTA misspelled latitude
 	latitutde: number
 	longitude: number
 }
@@ -268,28 +271,20 @@ export interface Vehicle {
 	/** Only set on paratransit vehicles */
 	runId?: string
 }
-export class WTAClient {
-	#key?: string
-
+export class WTAClient extends BaseClient {
 	constructor(key?: string) {
-		this.#key = key
-	}
-
-	async #get_endpoint<T>(endpoint: string) {
-		const headers = new Headers({
-			'Content-Type': 'application/json',
-			'User-Agent': 'whatcom-live/0.0.0',
-		})
-		if (this.#key) {
-			headers.append('X-API-KEY', this.#key)
-		}
-		const response = await fetch(new URL(endpoint, 'https://api.ridewta.com'), { headers })
-
-		return response.json() as Promise<T>
+		super(
+			(endpoint) => new URL(endpoint, 'https://api.ridewta.com'),
+			(res) => res.then((res) => res.json()),
+			{
+				'Content-Type': 'application/json',
+				...(key ? { 'X-API-KEY': key } : {}),
+			},
+		)
 	}
 
 	async getDetours() {
-		const { detours } = await this.#get_endpoint<{ detours: Detour[] }>('/detours')
+		const { detours } = await this.getEndpoint<{ detours: Detour[] }>('/detours')
 
 		return detours
 	}
@@ -297,25 +292,25 @@ export class WTAClient {
 	//
 	// }
 	async getRoutes() {
-		const { routes } = await this.#get_endpoint<{ routes: Route[] }>('/routes')
+		const { routes } = await this.getEndpoint<{ routes: Route[] }>('/routes')
 
 		return routes
 	}
 	getRoute(route: string) {
-		return this.#get_endpoint<Route>(`/routes/${route}`)
+		return this.getEndpoint<Route>(`/routes/${route}`)
 	}
 	getBulletinsByRoute(route: string) {
-		return this.#get_endpoint<Bulletin[]>(`/routes/${route}/bulletins`)
+		return this.getEndpoint<Bulletin[]>(`/routes/${route}/bulletins`)
 	}
 	getDetoursByRoute(route: string) {
-		return this.#get_endpoint<Detour[] | 'No detours found for that route.'>(
+		return this.getEndpoint<Detour[] | 'No detours found for that route.'>(
 			`/routes/${route}/detours`,
 		)
 	}
 	async getDirectionsByRoute(route: string) {
 		const {
 			'bustime-response': { directions },
-		} = await this.#get_endpoint<{
+		} = await this.getEndpoint<{
 			'bustime-response': {
 				directions: Direction[]
 			}
@@ -324,33 +319,33 @@ export class WTAClient {
 		return directions
 	}
 	getPatternsByRoute(route: string) {
-		return this.#get_endpoint<Pattern[]>(`/routes/${route}/patterns`)
+		return this.getEndpoint<Pattern[]>(`/routes/${route}/patterns`)
 	}
 	async getServiceBulletins() {
-		const { bulletins } = await this.#get_endpoint<{ bulletins: Bulletin[] }>('/servicebulletins')
+		const { bulletins } = await this.getEndpoint<{ bulletins: Bulletin[] }>('/servicebulletins')
 
 		return bulletins
 	}
 	getStops() {
-		return this.#get_endpoint<Stop[]>('/stops')
+		return this.getEndpoint<Stop[]>('/stops')
 	}
 	async getStop(stop: string) {
-		const [stop_data] = await this.#get_endpoint<[Stop]>(`/stops/${stop}`)
+		const [stop_data] = await this.getEndpoint<[Stop]>(`/stops/${stop}`)
 
 		return stop_data
 	}
 	async getAttachmentsByStop(stop: string) {
-		const attachment = await this.#get_endpoint<`"${string}"`>(`/stops/${stop}/attachments`)
+		const attachment = await this.getEndpoint<`"${string}"`>(`/stops/${stop}/attachments`)
 
 		return attachment.substring(1, attachment.length - 1)
 	}
 	getBulletinsByStop(stop: string) {
-		return this.#get_endpoint<Bulletin[]>(`/stops/${stop}/bulletins`)
+		return this.getEndpoint<Bulletin[]>(`/stops/${stop}/bulletins`)
 	}
 	async getPredictionsByStop(stop: string) {
 		const {
 			'bustime-response': { prd },
-		} = await this.#get_endpoint<{
+		} = await this.getEndpoint<{
 			'bustime-response': {
 				prd: Prediction[]
 			}
@@ -359,19 +354,19 @@ export class WTAClient {
 		return prd.map(format_data)
 	}
 	async getVehicles() {
-		const { vehicles } = await this.#get_endpoint<{ vehicles: Vehicle[] }>('/vehicles')
+		const { vehicles } = await this.getEndpoint<{ vehicles: Vehicle[] }>('/vehicles')
 
 		return vehicles.map(format_data)
 	}
 	async getVehicle(vehicle: string) {
-		const { vehicles } = await this.#get_endpoint<{ vehicles: [Vehicle] }>(`/vehicles/${vehicle}`)
+		const { vehicles } = await this.getEndpoint<{ vehicles: [Vehicle] }>(`/vehicles/${vehicle}`)
 
 		return format_data(vehicles[0])
 	}
 	async getPredictionsByVehicle(vehicle: string) {
 		const {
 			'bustime-response': { prd },
-		} = await this.#get_endpoint<{
+		} = await this.getEndpoint<{
 			'bustime-response': {
 				prd: Prediction[]
 			}
