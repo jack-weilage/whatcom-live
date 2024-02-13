@@ -103,6 +103,9 @@ export interface Stop {
 	latitutde: number
 	longitude: number
 }
+export interface StopData extends Stop {
+	attachment?: string
+}
 
 enum PredictionType {
 	Arrival = 'A',
@@ -334,10 +337,10 @@ export class WTAClient extends BaseClient {
 
 		return stop_data
 	}
-	async getAttachmentsByStop(stop: string) {
-		const attachment = await this.getEndpoint<`"${string}"`>(`/stops/${stop}/attachments`)
+	async getAttachmentsByStop(stop: number) {
+		const attachment = await this.getEndpoint<string>(`/stops/${stop}/attachments`)
 
-		return attachment.substring(1, attachment.length - 1)
+		return attachment === 'No attachments available.' ? undefined : attachment
 	}
 	getBulletinsByStop(stop: string) {
 		return this.getEndpoint<Bulletin[]>(`/stops/${stop}/bulletins`)
