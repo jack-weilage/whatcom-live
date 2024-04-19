@@ -1,27 +1,16 @@
 <script lang="ts">
-	import HelpCircle from 'lucide-svelte/icons/help-circle'
-
-	let dialogRef: HTMLDialogElement
-
-	function openDialog() {
-		dialogRef.showModal()
-	}
-	function closeDialog() {
-		dialogRef.close()
-	}
+	import * as AlertDialog from '$lib/components/ui/alert-dialog'
+	import { QuestionMark } from 'radix-icons-svelte'
 </script>
 
-<div class="aspect-square overflow-hidden rounded-full bg-white">
-	<button type="button" class="block size-full p-1" on:click={openDialog}>
-		<HelpCircle aria-label="Open about menu" />
-	</button>
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions a11y-click-events-have-key-events -->
-	<dialog
-		class="max-w-lg rounded-md p-6 backdrop:bg-black backdrop:bg-opacity-80"
-		bind:this={dialogRef}
-		on:click|self={closeDialog}
-	>
-		<h2 class="mb-2 text-center text-3xl">About</h2>
+<AlertDialog.Root closeOnOutsideClick={true}>
+	<AlertDialog.Trigger asChild let:builder>
+		<button use:builder.action {...builder}>
+			<QuestionMark class="mapboxgl-ctrl-icon p-1.5" />
+		</button>
+	</AlertDialog.Trigger>
+	<AlertDialog.Content>
+		<AlertDialog.Title>About</AlertDialog.Title>
 		<p class="mb-2">
 			Bus data sourced from <a href="https://data.ridewta.com/api/index.html" class="text-blue-600"
 				>api.ridewta.com</a
@@ -47,10 +36,6 @@
 			Authority or the Washington State Department of Transportation.
 		</p>
 
-		<button
-			type="button"
-			class="mt-8 block w-full rounded-md bg-black p-2 text-base text-white"
-			on:click={closeDialog}>Close</button
-		>
-	</dialog>
-</div>
+		<AlertDialog.Action>Close</AlertDialog.Action>
+	</AlertDialog.Content>
+</AlertDialog.Root>

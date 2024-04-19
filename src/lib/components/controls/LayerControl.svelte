@@ -1,88 +1,161 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition'
-	import { outclick } from '$lib/actions'
-
 	import { wsdotAlerts, wsdotBorderCrossings, wsdotCameras } from '$lib/stores/wsdot'
-	import { wtaRoutes, wtaVehicles } from '$lib/stores/wta'
+	import {
+		wtaFixedRouteVehicles,
+		wtaParatransitVehicles,
+		wtaRoutes,
+		wtaSupportVehicles,
+	} from '$lib/stores/wta'
 
 	import BusIcon from '$lib/img/BusIcon.svg'
+	import ParatransitVehicleIcon from '$lib/img/ParatransitBusIcon.svg'
+	import SupportVehicleIcon from '$lib/img/SupportVehicleIcon.svg'
+
 	import CameraIcon from '$lib/img/CameraIcon.svg'
 	import GateIcon from '$lib/img/GateIcon.svg'
 	import PathIcon from '$lib/img/PathIcon.svg'
 	import WarningIcon from '$lib/img/WarningIcon.svg'
 
-	import MenuIcon from 'lucide-svelte/icons/menu'
-	import XIcon from 'lucide-svelte/icons/x'
+	interface Service {
+		type: 'service'
+		name: string
+		icon: string
+		visible: boolean
+		store: {
+			hide(): void
+			show(): void
+		}
+	}
+	interface ServiceGroup {
+		type: 'service-group'
+		name: string
+		services: Service[]
+	}
+	interface Organization {
+		type: 'organization'
+		name: string
+		services: (Service | ServiceGroup)[]
+	}
+	$: organizations = [
+		{
+			type: 'organization',
+			name: 'WTA',
+			services: [
+				{
+					type: 'service-group',
+					name: 'Vehicles',
+					services: [
+						{
+							type: 'service',
+							name: 'Fixed Route',
+							icon: BusIcon,
+							visible: $wtaFixedRouteVehicles.visible,
+							store: wtaFixedRouteVehicles,
+						},
+						{
+							type: 'service',
+							name: 'Paratransit',
+							icon: ParatransitVehicleIcon,
+							visible: $wtaParatransitVehicles.visible,
+							store: wtaParatransitVehicles,
+						},
+						{
+							type: 'service',
+							name: 'Support',
+							icon: SupportVehicleIcon,
+							visible: $wtaSupportVehicles.visible,
+							store: wtaSupportVehicles,
+						},
+					],
+				},
+				{
+					type: 'service',
+					name: 'Bus Routes',
+					icon: PathIcon,
+					visible: $wtaRoutes.visible,
+					store: wtaRoutes,
+				},
+			],
+		},
+		{
+			type: 'organization',
+			name: 'WSDOT',
+			services: [
+				{
+					type: 'service',
+					name: 'Border Crossings',
+					icon: GateIcon,
+					visible: $wsdotBorderCrossings.visible,
+					store: wsdotBorderCrossings,
+				},
+				{
+					type: 'service',
+					name: 'Alerts',
+					icon: WarningIcon,
+					visible: $wsdotAlerts.visible,
+					store: wsdotAlerts,
+				},
+				{
+					type: 'service',
+					name: 'Street Cameras',
+					icon: CameraIcon,
+					visible: $wsdotCameras.visible,
+					store: wsdotCameras,
+				},
+			],
+		},
+	] as Organization[]
 
-	$: layers = [
-		{
-			name: 'WTA Vehicles',
-			src: BusIcon,
-			visible: $wtaVehicles.visible,
-			store: wtaVehicles,
-		},
-		{
-			name: 'WTA Routes',
-			src: PathIcon,
-			visible: $wtaRoutes.visible,
-			store: wtaRoutes,
-		},
-		{
-			name: 'WSDOT Border Crossings',
-			src: GateIcon,
-			visible: $wsdotBorderCrossings.visible,
-			store: wsdotBorderCrossings,
-		},
-		{
-			name: 'WSDOT Alerts',
-			src: WarningIcon,
-			visible: $wsdotAlerts.visible,
-			store: wsdotAlerts,
-		},
-		{
-			name: 'WSDOT Cameras',
-			src: CameraIcon,
-			visible: $wsdotCameras.visible,
-			store: wsdotCameras,
-		},
-	]
-	let open = false
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+	import { HamburgerMenu } from 'radix-icons-svelte'
 </script>
 
-<div class="flex flex-wrap gap-2" use:outclick={() => (open = false)}>
-	<label
-		class:bg-gray-100={!open}
-		class:text-gray-400={!open}
-		class="mr-10 flex aspect-square cursor-pointer items-center rounded-full bg-white px-2 py-1.5"
-	>
-		<input type="checkbox" class="hidden cursor-pointer" bind:checked={open} />
-		{#if open}
-			<XIcon color="#000" aria-label="Close layer toggle menu" />
-		{:else}
-			<MenuIcon color="#000" aria-label="Open layer toggle menu" />
-		{/if}
-	</label>
-
-	{#if open}
-		<div class="mr-16 flex flex-wrap gap-2" transition:fly={{ x: -50, duration: 250 }}>
-			{#each layers as { name, visible, store, src } (name)}
-				<label
-					class:bg-gray-100={!visible}
-					class:text-gray-400={!visible}
-					class="flex cursor-pointer items-center rounded-full bg-white px-2 py-1.5 transition-colors"
-				>
-					<input
-						type="checkbox"
-						checked={visible}
-						class="hidden cursor-pointer"
-						on:change={async ({ currentTarget }) => {
-							currentTarget.checked ? await store.show() : store.hide()
+<DropdownMenu.Root closeOnItemClick={false}>
+	<DropdownMenu.Trigger asChild let:builder>
+		<button use:builder.action {...builder}>
+			<HamburgerMenu class="mapboxgl-ctrl-icon stroke-2 p-1.5" />
+		</button>
+	</DropdownMenu.Trigger>
+	<DropdownMenu.Content>
+		{#each organizations as { name, services }, i}
+			<DropdownMenu.Label>{name}</DropdownMenu.Label>
+			{#each services as service}
+				{#if service.type === 'service'}
+					<DropdownMenu.CheckboxItem
+						class="flex gap-x-2"
+						checked={service.visible}
+						on:change={(ev) => {
+							//@ts-expect-error: Bad type coercion, `service` will always be of type `Service`
+							ev.detail ? service.store.show() : service.store.hide()
 						}}
-					/>
-					<img {src} alt="" class="mr-2 size-5" />
-					{name}
-				</label>
+					>
+						<img src={service.icon} alt="" class="w-4" />
+						{service.name}
+					</DropdownMenu.CheckboxItem>
+				{:else if service.type === 'service-group'}
+					<DropdownMenu.Sub>
+						<DropdownMenu.SubTrigger>{service.name}</DropdownMenu.SubTrigger>
+						<DropdownMenu.SubContent>
+							{#each service.services as { visible, store, name, icon }}
+								<!-- TODO: This wraps weird. -->
+								<DropdownMenu.CheckboxItem
+									class="flex gap-x-2 whitespace-nowrap text-nowrap pr-8"
+									checked={visible}
+									on:change={(ev) => {
+										ev.detail ? store.show() : store.hide()
+									}}
+								>
+									<img src={icon} alt="" class="size-4" />
+									{name}
+								</DropdownMenu.CheckboxItem>
+							{/each}
+						</DropdownMenu.SubContent>
+					</DropdownMenu.Sub>
+				{/if}
 			{/each}
-		</div>
-	{/if}
-</div>
+			{#if i < organizations.length - 1}
+				<DropdownMenu.Separator />
+			{/if}
+		{/each}
+	</DropdownMenu.Content>
+</DropdownMenu.Root>

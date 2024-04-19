@@ -51,44 +51,52 @@
 		isDelayed: boolean
 		time: number
 	}
+
 	let predictions: ParsedPrediction[] = []
-
 	let activeItem: Vehicle
-	$: if (activeItem?.vehicleGroup === 'fixedRoute') {
-		void fetch(`/api/wta/vehicles/prediction/${activeItem.vehicle}`)
-			.then((res) => res.json() as Promise<ParsedPrediction[]>)
-			.then((preds) => {
-				predictions = preds
-			})
-	} else if (activeItem?.vehicleGroup === 'paratransit') {
-		const midnight = new Chronosis().startOf('day')
-		predictions = []
 
-		const handlePoint = (address?: string, estimate?: number) => {
-			if (!address || !estimate) {
-				return
-			}
-
-			predictions.push({
-				address,
-				isDelayed: false,
-				time: +midnight.add(estimate * 1000),
-			})
+	function updatePredictions(vehicle: Vehicle | undefined) {
+		if (!vehicle || (vehicle.vehicleGroup === 'fixedRoute' && !vehicle.routeNumber)) {
+			predictions = []
+			return
 		}
 
-		handlePoint(activeItem.pt1Address, activeItem.pt1estTime)
-		handlePoint(activeItem.pt2Address, activeItem.pt2estTime)
-		handlePoint(activeItem.pt3Address, activeItem.pt3estTime)
-	} else if (!activeItem) {
-		// If nothing is selected, prediction array should be emptied.
-		predictions = Array(5)
-			.fill(0)
-			.map((_, i) => ({
-				address: `Loading stop ${i + 1}...`,
-				time: -1,
-				isDelayed: false,
-			}))
+		switch (vehicle.vehicleGroup) {
+			case 'fixedRoute':
+				void fetch(`/api/wta/vehicles/prediction/${vehicle.vehicle}`)
+					.then((res) => res.json() as Promise<ParsedPrediction[]>)
+					.then((preds) => {
+						predictions = preds
+					})
+				break
+			case 'paratransit': {
+				const midnight = new Chronosis().startOf('day')
+				predictions = []
+
+				for (let i = 1; i <= 3; i++) {
+					predictions.push({
+						address: vehicle[`pt${i as 1 | 2 | 3}Address`] ?? '--',
+						isDelayed: false,
+						time: +midnight.add(vehicle[`pt${i as 1 | 2 | 3}estTime`] ?? 0),
+					})
+				}
+				break
+			}
+		}
 	}
+
+	$: updatePredictions(activeItem)
+
+	import { Badge } from '$lib/components/ui/badge'
+	import { Button } from '$lib/components/ui/button'
+	import * as Card from '$lib/components/ui/card'
+	import * as Collapsible from '$lib/components/ui/collapsible'
+	import { Skeleton } from '$lib/components/ui/skeleton'
+	import * as Tooltip from '$lib/components/ui/tooltip'
+
+	import { CaretSort } from 'radix-icons-svelte'
+
+	const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000
 </script>
 
 <CustomPopup
@@ -97,54 +105,104 @@
 	itemToLngLat={({ lng, lat }) => [lng, lat]}
 	bind:activeItem
 >
-	<h2 class="mb-4 bg-sky-800 p-2 text-lg font-bold text-white">
-		Vehicle: {activeItem.vehicle}
-	</h2>
-	<p>
-		<b>Vehicle type:</b>
-		{groupToGroupName(activeItem.vehicleGroup)}
-	</p>
-	{#if activeItem.routeNumber && activeItem.routeName}
-		<p>
-			<b>Route:</b>
-			{activeItem.routeNumber}
-			{activeItem.routeName}
-		</p>
-	{/if}
-	{#if activeItem.directionName}
-		<p>
-			<b>Direction:</b>
-			{activeItem.directionName}
-		</p>
-	{/if}
-	<p>
-		<b>Speed:</b>
-		{activeItem.speed} MPH
-	</p>
-	{#if activeItem.heading !== undefined}
-		<p>
-			<b>Heading:</b>
-			{activeItem.heading}&deg; {headingToDirection(activeItem.heading)}
-		</p>
-	{/if}
-	{#if activeItem.vehicleGroup === 'fixedRoute' || activeItem.vehicleGroup === 'paratransit'}
-		<p class="font-bold">Incoming stops:</p>
-		<ul class="flex flex-col gap-2">
-			{#each predictions as { address, isDelayed, time }}
-				<li class="flex items-center justify-between gap-4">
-					<p>{address}</p>
-					<p
-						class:bg-red-300={isDelayed}
-						class="w-24 whitespace-nowrap rounded-lg bg-gray-100 px-4 py-2 text-center"
-					>
-						{relativeTime($now, time)}
+	<Card.Root>
+		<Card.Header>
+			<Card.Title>
+				{#if activeItem.routeNumber && activeItem.directionName}
+					{activeItem.routeNumber}
+					{activeItem.directionName}
+				{:else}
+					Out Of Service
+				{/if}
+			</Card.Title>
+			<Card.Description>
+				{groupToGroupName(activeItem.vehicleGroup)} Vehicle (Updates every 15 seconds)
+			</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			{#if activeItem.routeNumber && activeItem.routeName}
+				<p>
+					<b>Route:</b>
+					{activeItem.routeNumber}
+					{activeItem.routeName}
+				</p>
+			{/if}
+
+			{#if (activeItem.vehicleGroup === 'fixedRoute' && activeItem.routeNumber) || activeItem.vehicleGroup === 'paratransit'}
+				<p class="font-bold">Incoming stops:</p>
+				<ul class="flex flex-col gap-2">
+					{#each predictions as { address, isDelayed, time }}
+						<li class="flex items-center justify-between gap-4">
+							<p class="text-sm">{address}</p>
+							<Tooltip.Root>
+								<Tooltip.Trigger>
+									<Badge variant={isDelayed ? 'destructive' : 'default'} class="whitespace-nowrap">
+										{relativeTime($now, time + timezoneOffset)}
+									</Badge>
+								</Tooltip.Trigger>
+								<Tooltip.Content>
+									{new Chronosis(time).format('hh:mm a')}
+								</Tooltip.Content>
+							</Tooltip.Root>
+						</li>
+					{:else}
+						{#each { length: activeItem.vehicleGroup === 'fixedRoute' ? 5 : 3 } as _}
+							<li class="flex items-center justify-between gap-4">
+								<Skeleton class="h-6 w-40" />
+								<Skeleton class="h-6 w-12" />
+							</li>
+						{/each}
+					{/each}
+				</ul>
+			{/if}
+		</Card.Content>
+		<Card.Footer class="flex-col items-start">
+			<Collapsible.Root class="mt-4 w-full">
+				<Collapsible.Trigger asChild let:builder>
+					<Button builders={[builder]} variant="outline" class="flex w-full justify-between">
+						Advanced <CaretSort />
+					</Button>
+				</Collapsible.Trigger>
+				<Collapsible.Content class="mt-2">
+					<p>
+						<b>Vehicle ID:</b>
+						{activeItem.vehicle}
 					</p>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-	<p>
-		<b>Last updated:</b>
-		{new Chronosis(activeItem.time).format('h:mm:ss a')} ({relativeTime($now, activeItem.time)})
-	</p>
+					<p>
+						<b>Last updated:</b>
+						{new Chronosis(activeItem.time).format('h:mm:ss a')} ({relativeTime(
+							$now,
+							activeItem.time,
+						)})
+					</p>
+					{#if activeItem.heading !== undefined}
+						<p>
+							<b>Heading:</b>
+							{headingToDirection(activeItem.heading)} ({activeItem.heading % 360}&deg;)
+						</p>
+					{/if}
+					<p>
+						<b>Speed:</b>
+						{activeItem.speed ?? 'Unknown'} MPH
+					</p>
+					<p>
+						<b>Satelites:</b>
+						{activeItem.satellites ?? 'Unknown'}
+					</p>
+					<p>
+						<b>Last EProbe:</b>
+						{activeItem.lastEProbe
+							? new Chronosis(activeItem.lastEProbe).format('h:mm:ss a')
+							: 'Unknown'}
+					</p>
+					<p>
+						<b>Last OOSProbe:</b>
+						{activeItem.lastOOSProbe
+							? new Chronosis(activeItem.lastOOSProbe).format('h:mm:ss a')
+							: 'Unknown'}
+					</p>
+				</Collapsible.Content>
+			</Collapsible.Root>
+		</Card.Footer>
+	</Card.Root>
 </CustomPopup>
