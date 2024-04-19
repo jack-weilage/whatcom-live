@@ -15,13 +15,15 @@ export function relativeTime(now: number, then: number) {
 			return false
 		}
 
-		if (now < then) {
-			return `in ${unitDelta}${unit}`
-		} else if (then < now) {
-			return `${unitDelta}${unit} ago`
+		if (unitDelta === 0) {
+			return 'now'
 		}
 
-		return 'now'
+		if (now < then) {
+			return `in ${unitDelta}${unit}`
+		} else {
+			return `${unitDelta}${unit} ago`
+		}
 	}
 
 	return (
