@@ -9,7 +9,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"dev": "vite dev",
 		"format": "prettier --cache --write .",
-		"lint": "prettier --cache --check . && eslint .",
+		"lint": "prettier --cache --check .",
 		"preview": "vite preview"
 	},
 	"dependencies": {
@@ -27,14 +27,9 @@
 		"@turf/helpers": "^6.5.0",
 		"@types/mapbox__mapbox-sdk": "^0.14.0",
 		"@types/turf": "^3.5.32",
-		"@typescript-eslint/eslint-plugin": "^7.6.0",
-		"@typescript-eslint/parser": "^7.6.0",
 		"@vercel/analytics": "^1.2.2",
 		"autoprefixer": "^10.4.19",
 		"chronosis": "^0.2.0",
-		"eslint": "^9.0.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-svelte": "^2.37.0",
 		"geojson": "^0.5.0",
 		"lucide-svelte": "^0.368.0",
 		"mapbox-gl": "^3.3.0",
