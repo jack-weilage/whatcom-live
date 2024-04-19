@@ -1,4 +1,5 @@
 import { WSDOT_API_KEY } from '$env/static/private'
+import { BaseClient } from './base.server'
 
 export type WSDOTTimestamp = `/Date(${number}-${number})/`
 interface RoadwayLocation {
@@ -48,43 +49,32 @@ export interface Camera {
 	Title: string
 }
 
-export class WSDOTTrafficClient {
-	#key: string
-
+export class WSDOTTrafficClient extends BaseClient {
 	constructor(key: string) {
-		this.#key = key
-	}
-
-	async #get_endpoint<T>(endpoint: string) {
-		const headers = new Headers({
-			'Content-Type': 'application/json',
-			'User-Agent': 'whatcom-live/0.0.0',
-		})
-
-		const response = await fetch(
-			'https://www.wsdot.wa.gov/Traffic/api' + endpoint + `?AccessCode=${this.#key}`,
-			{ headers },
+		super(
+			(endpoint) =>
+				new URL('https://www.wsdot.wa.gov/Traffic/api' + endpoint + `?AccessCode=${key}`),
+			(res) => res.then((res) => res.json()),
+			{ 'Content-Type': 'application/json' },
 		)
-
-		return response.json() as Promise<T>
 	}
 
 	async getBorderCrossings() {
-		const crossings = await this.#get_endpoint<BorderCrossing[]>(
+		const crossings = await this.getEndpoint<BorderCrossing[]>(
 			'/BorderCrossings/BorderCrossingsREST.svc/GetBorderCrossingsAsJson',
 		)
 
 		return crossings
 	}
 	async getAlerts() {
-		const alerts = await this.#get_endpoint<Alert[]>(
+		const alerts = await this.getEndpoint<Alert[]>(
 			'/HighwayAlerts/HighwayAlertsREST.svc/GetAlertsAsJson',
 		)
 
 		return alerts
 	}
 	async getCameras() {
-		const cameras = await this.#get_endpoint<Camera[]>(
+		const cameras = await this.getEndpoint<Camera[]>(
 			'/HighwayCameras/HighwayCamerasREST.svc/GetCamerasAsJson',
 		)
 

@@ -5,6 +5,7 @@
 	import { Chronosis } from 'chronosis'
 
 	import CustomPopup from '../CustomPopup.svelte'
+	import * as Card from '$lib/components/ui/card'
 </script>
 
 <CustomPopup
@@ -23,29 +24,27 @@
 	}}
 	let:activeItem
 >
-	<h2 class="mb-4 bg-sky-800 p-2 text-lg font-bold text-white">
-		Alert: {activeItem.EventCategory} ({activeItem.Priority} Priority)
-	</h2>
-	<p>
-		<b>Description:</b>
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html activeItem.HeadlineDescription}
-	</p>
-	{#if activeItem.ExtendedDescription}
-		<p>
-			<b>Extended description:</b>
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html activeItem.ExtendedDescription}
-		</p>
-	{/if}
-	{@const startedOnTime = new Chronosis(wsdotTimestampToDate(activeItem.StartTime))}
-	<p>
-		<b>Started:</b>
-		{relativeTime($now, +startedOnTime)} ({startedOnTime.format('h:mm a, MM/DD/YY')})
-	</p>
-	{@const lastUpdatedTime = new Chronosis(wsdotTimestampToDate(activeItem.LastUpdatedTime))}
-	<p>
-		<b>Last updated:</b>
-		{relativeTime($now, +lastUpdatedTime)} ({lastUpdatedTime.format('h:mm a, MM/DD/YY')})
-	</p>
+	<Card.Root>
+		<Card.Header>
+			<Card.Title>
+				{activeItem.EventCategory} ({activeItem.Priority} Priority)
+			</Card.Title>
+			<Card.Description>
+				{@html activeItem.HeadlineDescription}
+			</Card.Description>
+		</Card.Header>
+		<Card.Footer class="grid grid-cols-[auto_1fr] gap-x-2">
+			{@const startedOnTime = new Chronosis(wsdotTimestampToDate(activeItem.StartTime))}
+			{@const lastUpdatedTime = new Chronosis(wsdotTimestampToDate(activeItem.LastUpdatedTime))}
+
+			<b>Started:</b>
+			<span>
+				{startedOnTime.format('h:mm a, MM/DD/YY')} ({relativeTime($now, +startedOnTime)})
+			</span>
+			<b>Last updated:</b>
+			<span>
+				{lastUpdatedTime.format('h:mm a, MM/DD/YY')} ({relativeTime($now, +lastUpdatedTime)})
+			</span>
+		</Card.Footer>
+	</Card.Root>
 </CustomPopup>

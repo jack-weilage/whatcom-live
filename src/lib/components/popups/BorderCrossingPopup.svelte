@@ -5,6 +5,7 @@
 	import { Chronosis } from 'chronosis'
 
 	import CustomPopup from '../CustomPopup.svelte'
+	import * as Card from '$lib/components/ui/card'
 </script>
 
 <CustomPopup
@@ -17,16 +18,27 @@
 	let:activeItem
 >
 	{@const lastUpdated = new Chronosis(wsdotTimestampToDate(activeItem.Time))}
-	<h2 class="mb-4 bg-sky-800 p-2 text-lg font-bold text-white">
-		<!-- TODO: Svelte type narrowing -->
-		Crossing: {activeItem.BorderCrossingLocation?.Description}
-	</h2>
-	<p>
-		<b>Wait time:</b>
-		{activeItem.WaitTime} minutes
-	</p>
-	<p>
-		<b>Last updated:</b>
-		{lastUpdated.format('hh:mm a')} ({relativeTime($now, +lastUpdated)})
-	</p>
+	<Card.Root>
+		<Card.Header>
+			<Card.Title>
+				{activeItem.BorderCrossingLocation?.Description ?? 'Unknown Crossing'}
+			</Card.Title>
+			<!-- TODO: Confirm -->
+			<Card.Description>Border Crossing (Updates every 15 minutes)</Card.Description>
+		</Card.Header>
+
+		<Card.Content>
+			<p>
+				<b>Wait time:</b>
+				{activeItem.WaitTime} minutes
+			</p>
+		</Card.Content>
+
+		<Card.Footer>
+			<p>
+				<b>Last updated:</b>
+				{lastUpdated.format('hh:mm a')} ({relativeTime($now, +lastUpdated)})
+			</p>
+		</Card.Footer>
+	</Card.Root>
 </CustomPopup>

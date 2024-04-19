@@ -3,7 +3,13 @@
 
 	import { maxBounds } from '$lib/constants'
 	import { wsdotAlerts, wsdotBorderCrossings, wsdotCameras } from '$lib/stores/wsdot'
-	import { wtaRoutes, wtaVehicles } from '$lib/stores/wta'
+	import {
+		wtaRoutes,
+		wtaVehicles,
+		wtaSupportVehicles,
+		wtaFixedRouteVehicles,
+		wtaParatransitVehicles,
+	} from '$lib/stores/wta'
 
 	import { onMount } from 'svelte'
 
@@ -28,13 +34,6 @@
 	import VehiclePopup from '$lib/components/popups/VehiclePopup.svelte'
 
 	onMount(() => {
-		void wtaVehicles.fetch()
-		void wtaRoutes.fetch()
-
-		void wsdotAlerts.fetch()
-		void wsdotBorderCrossings.fetch()
-		void wsdotCameras.fetch()
-
 		const intervals = [
 			setInterval(() => {
 				void wtaVehicles.fetch()
@@ -78,7 +77,7 @@
 </svelte:head>
 
 <Map
-	class="min-h-dvh w-full"
+	class="size-full overflow-hidden"
 	options={{
 		accessToken: PUBLIC_MAPBOX_KEY,
 		style: 'mapbox://styles/jweilage/clngoh7qn01l401r7gjvmfxa7',
@@ -114,13 +113,17 @@
 		<AboutControl />
 	</Control>
 
-	{#if $wtaVehicles.visible}
+	{#if $wtaFixedRouteVehicles.visible || $wtaParatransitVehicles.visible || $wtaSupportVehicles.visible}
 		<Source
 			id="wta-vehicles"
 			options={{
 				type: 'geojson',
 				data: featureCollection(
-					$wtaVehicles.data.map(({ lng, lat, vehicle: id, routeNumber, vehicleGroup }) =>
+					[
+						...($wtaFixedRouteVehicles.visible ? $wtaFixedRouteVehicles.data : []),
+						...($wtaParatransitVehicles.visible ? $wtaParatransitVehicles.data : []),
+						...($wtaSupportVehicles.visible ? $wtaSupportVehicles.data : []),
+					].map(({ lng, lat, vehicle: id, routeNumber, vehicleGroup }) =>
 						point([lng, lat], {
 							id,
 							color:
@@ -315,3 +318,14 @@
 		</Source>
 	{/if}
 </Map>
+
+<style>
+	/* HACK: This prevents popups from overflowing the body */
+	:global(html, body) {
+		overflow: hidden;
+		position: relative;
+
+		width: 100vw;
+		height: 100dvh;
+	}
+</style>
