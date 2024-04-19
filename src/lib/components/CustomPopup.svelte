@@ -17,10 +17,10 @@
 	const { layerStore } = getContext<LayerContext>(layerContextKey)
 
 	let activeItemID: number | string | undefined = undefined
-	//@ts-expect-error - Hack to fix svelte type narrowing
+	//@ts-expect-error - HACK: to fix svelte type narrowing
 	// eslint-disable-next-line no-undef
 	export let activeItem: T = undefined
-	//@ts-expect-error - TODO: Hack to fix svelte type narrowing
+	//@ts-expect-error - HACK: to fix svelte type narrowing
 	$: activeItem = $store.data.find((item) => itemToID(item) === activeItemID)
 
 	function onClose() {
@@ -58,3 +58,52 @@
 		<slot {activeItem} />
 	</Popup>
 {/if}
+
+<style>
+	/* Hide ugly default styles */
+	:global(.mapboxgl-popup-content) {
+		display: contents;
+	}
+	:global(
+			:is(
+					.mapboxgl-popup-anchor-top-left,
+					.mapboxgl-popup-anchor-top,
+					.mapboxgl-popup-anchor-top-right
+				)
+				> .mapboxgl-popup-tip
+		) {
+		margin-bottom: -1px;
+	}
+	:global(
+			:is(
+					.mapboxgl-popup-anchor-bottom-left,
+					.mapboxgl-popup-anchor-bottom,
+					.mapboxgl-popup-anchor-bottom-right
+				)
+				> .mapboxgl-popup-tip
+		) {
+		margin-top: -1px;
+	}
+	:global(.mapbox-popup-anchor-left > .mapboxgl-popup-tip) {
+		margin-right: -1px;
+	}
+	:global(.mapbox-popup-anchor-right > .mapboxgl-popup-tip) {
+		margin-left: -1px;
+	}
+	:global(.mapboxgl-popup-anchor-top-left > .mapboxgl-popup-content > div > .rounded-xl) {
+		border-top-left-radius: 0;
+	}
+	:global(.mapboxgl-popup-anchor-top-right > .mapboxgl-popup-content > div > .rounded-xl) {
+		border-top-right-radius: 0;
+	}
+	:global(.mapboxgl-popup-anchor-bottom-left > .mapboxgl-popup-content > div > .rounded-xl) {
+		border-bottom-left-radius: 0;
+	}
+	:global(.mapboxgl-popup-anchor-bottom-right > .mapboxgl-popup-content > div > .rounded-xl) {
+		border-bottom-right-radius: 0;
+	}
+	/* Make sure that the tip shows up above the shadow */
+	/* :global(.mapboxgl-popup-tip) { */
+	/* 	margin-top: -1px; */
+	/* } */
+</style>
