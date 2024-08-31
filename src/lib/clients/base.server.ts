@@ -19,10 +19,15 @@ export class BaseClient {
 	}
 
 	getEndpoint<T>(endpoint: string, headers?: Record<string, string>) {
+		const final_headers = new Headers(headers)
+		for (const [key, value] of this.#globalHeaders.entries()) {
+			final_headers.append(key, value)
+		}
+
 		return this.#responseHandler(
 			fetch(this.#urlConstructor(endpoint), {
 				// Merge global headers with the per-endpoint ones.
-				headers: { ...this.#globalHeaders, ...headers },
+				headers: final_headers,
 			}),
 		) as Promise<T>
 	}
